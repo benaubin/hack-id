@@ -54,3 +54,7 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem "doorkeeper", "~> 5.4"
 
 gem "pg", "~> 1.2"
+
+gem "devise", "~> 4.7"
+
+gem "doorkeeper-openid_connect", "~> 1.7"

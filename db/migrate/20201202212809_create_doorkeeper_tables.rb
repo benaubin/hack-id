@@ -7,6 +7,8 @@ class CreateDoorkeeperTables < ActiveRecord::Migration[6.0]
       t.string  :uid,     null: false
       t.string  :secret,  null: false
 
+      t.references :owner, null: false, foreign_key: { to_table: :members }, type: :uuid
+
       # Remove `null: false` if you are planning to use grant flows
       # that doesn't require redirect URI to be used during authorization
       # like Client Credentials flow or Resource Owner Password.

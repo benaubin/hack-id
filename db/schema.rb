@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_12_02_213001) do
+ActiveRecord::Schema.define(version: 2020_12_02_222822) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
@@ -20,12 +20,29 @@ ActiveRecord::Schema.define(version: 2020_12_02_213001) do
   create_table "members", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "display_name"
     t.string "full_name"
-    t.citext "primary_email"
-    t.string "password_digest"
-    t.datetime "email_confirmed_at"
+    t.citext "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.integer "sign_in_count", default: 0, null: false
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.inet "current_sign_in_ip"
+    t.inet "last_sign_in_ip"
+    t.string "confirmation_token"
+    t.datetime "confirmed_at"
+    t.datetime "confirmation_sent_at"
+    t.string "unconfirmed_email"
+    t.integer "failed_attempts", default: 0, null: false
+    t.string "unlock_token"
+    t.datetime "locked_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["primary_email"], name: "index_members_on_primary_email", unique: true
+    t.index ["confirmation_token"], name: "index_members_on_confirmation_token", unique: true
+    t.index ["email"], name: "index_members_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_members_on_reset_password_token", unique: true
+    t.index ["unlock_token"], name: "index_members_on_unlock_token", unique: true
   end
 
   create_table "oauth_access_grants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -62,30 +79,26 @@ ActiveRecord::Schema.define(version: 2020_12_02_213001) do
     t.string "name", null: false
     t.string "uid", null: false
     t.string "secret", null: false
+    t.uuid "owner_id", null: false
     t.text "redirect_uri", null: false
     t.string "scopes", default: "", null: false
     t.boolean "confidential", default: true, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["owner_id"], name: "index_oauth_applications_on_owner_id"
     t.index ["uid"], name: "index_oauth_applications_on_uid", unique: true
   end
 
-  create_table "sessions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "member_id", null: false
-    t.datetime "last_access_at"
-    t.string "last_access_ip"
-    t.string "last_access_ua"
-    t.datetime "password_verified_at"
-    t.datetime "email_verified_at"
-    t.datetime "slack_verified_at"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.index ["member_id", "last_access_at"], name: "index_sessions_on_member_id_and_last_access_at", order: { last_access_at: :desc }
+  create_table "oauth_openid_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "access_grant_id", null: false
+    t.string "nonce", null: false
+    t.index ["access_grant_id"], name: "index_oauth_openid_requests_on_access_grant_id"
   end
 
   add_foreign_key "oauth_access_grants", "members", column: "resource_owner_id"
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_access_tokens", "members", column: "resource_owner_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
-  add_foreign_key "sessions", "members"
+  add_foreign_key "oauth_applications", "members", column: "owner_id"
+  add_foreign_key "oauth_openid_requests", "oauth_access_grants", column: "access_grant_id", on_delete: :cascade
 end

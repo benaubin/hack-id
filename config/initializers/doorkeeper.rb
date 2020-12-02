@@ -7,10 +7,7 @@ Doorkeeper.configure do
 
   # This block will be called to check whether the resource owner is authenticated or not.
   resource_owner_authenticator do
-    raise "Please configure doorkeeper resource_owner_authenticator block located in #{__FILE__}"
-    # Put your resource owner authentication logic here.
-    # Example implementation:
-    #   User.find_by(id: session[:user_id]) || redirect_to(new_user_session_url)
+    authenticate_member!
   end
 
   # If you didn't skip applications controller from Doorkeeper routes in your application routes.rb
@@ -170,7 +167,7 @@ Doorkeeper.configure do
   # in your installation, they will be invalid without enabling the additional
   # setting `fallback_to_plain_secrets` below.
   #
-  # hash_token_secrets
+  hash_token_secrets
   # By default, token secrets will be hashed using the
   # +Doorkeeper::Hashing::SHA256+ strategy.
   #
@@ -184,7 +181,7 @@ Doorkeeper.configure do
 
   # Hash application secrets before persisting them.
   #
-  # hash_application_secrets
+  hash_application_secrets
   #
   # By default, applications will be hashed
   # with the +Doorkeeper::SecretStoring::SHA256+ strategy.
@@ -193,16 +190,6 @@ Doorkeeper.configure do
   # this line instead:
   #
   # hash_application_secrets using: '::Doorkeeper::SecretStoring::BCrypt'
-
-  # When the above option is enabled, and a hashed token or secret is not found,
-  # you can allow to fall back to another strategy. For users upgrading
-  # doorkeeper and wishing to enable hashing, you will probably want to enable
-  # the fallback to plain tokens.
-  #
-  # This will ensure that old access tokens and secrets
-  # will remain valid even if the hashing above is enabled.
-  #
-  # fallback_to_plain_secrets
 
   # Issue access tokens with refresh token (disabled by default), you may also
   # pass a block which accepts `context` to customize when to give a refresh
@@ -213,7 +200,9 @@ Doorkeeper.configure do
   # `grant_type` - the grant type of the request (see Doorkeeper::OAuth)
   # `scopes` - the requested scopes (see Doorkeeper::OAuth::Scopes)
   #
-  # use_refresh_token
+  use_refresh_token do |ctx|
+    false
+  end
 
   # Provide support for an owner to be assigned to each registered application (disabled by default)
   # Optional parameter confirmation: true (default: false) if you want to enforce ownership of
@@ -221,13 +210,13 @@ Doorkeeper.configure do
   # NOTE: you must also run the rails g doorkeeper:application_owner generator
   # to provide the necessary support
   #
-  # enable_application_owner confirmation: false
+  enable_application_owner confirmation: true
 
   # Define access token scopes for your provider
   # For more information go to
   # https://doorkeeper.gitbook.io/guides/ruby-on-rails/scopes
   #
-  # default_scopes  :public
+  default_scopes  :public
   # optional_scopes :write, :update
 
   # Allows to restrict only certain scopes for grant_type.
@@ -243,7 +232,7 @@ Doorkeeper.configure do
   # not in configuration, i.e. +default_scopes+ or +optional_scopes+.
   # (disabled by default)
   #
-  # enforce_configured_scopes
+  enforce_configured_scopes
 
   # Change the way client credentials are retrieved from the request object.
   # By default it retrieves first from the `HTTP_AUTHORIZATION` header, then
@@ -269,9 +258,7 @@ Doorkeeper.configure do
   # #call can be used in order to allow conditional checks (to allow non-SSL
   # redirects to localhost for example).
   #
-  # force_ssl_in_redirect_uri !Rails.env.development?
-  #
-  # force_ssl_in_redirect_uri { |uri| uri.host != 'localhost' }
+  force_ssl_in_redirect_uri { |uri| uri.host != 'localhost' }
 
   # Specify what redirect URI's you want to block during Application creation.
   # Any redirect URI is whitelisted by default.
@@ -344,7 +331,7 @@ Doorkeeper.configure do
   #   http://tools.ietf.org/html/rfc6819#section-4.4.2
   #   http://tools.ietf.org/html/rfc6819#section-4.4.3
   #
-  # grant_flows %w[authorization_code client_credentials]
+  grant_flows %w[authorization_code pkce]
 
   # Allows to customize OAuth grant flows that +each+ application support.
   # You can configure a custom block (or use a class respond to `#call`) that must

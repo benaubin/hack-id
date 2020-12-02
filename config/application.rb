@@ -15,5 +15,7 @@ module HackId
     # Application configuration can go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded after loading
     # the framework and any gems in your application.
+
+    config.hosts << "e97f81fe-7568-4868-b822-3fed46f82271-3000.apps.codespaces.githubusercontent.com"
   end
 end
